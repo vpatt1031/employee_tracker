@@ -70,6 +70,10 @@ const runSearch = () => {
             newEmployee();
             break;
 
+        case 'Exit':
+            connection.end();
+            break;
+
         default:
           console.log(`Invalid action: ${answer.action}`);
           break;
@@ -108,12 +112,12 @@ const allRoles = () => {
     })
 }
 
-// Query to show all employees
+//View all Employees
 
 const allEmployees = () => {
     let query = `
-    SELECT *
-    FROM employee`
+    SELECT employee.first_name, employee.last_name, roles.title, roles.salary, department.name AS department, CONCAT(manager.first_name, " ", manager.last_name) AS manager FROM employee LEFT JOIN roles ON employee.role_id = roles.id LEFT JOIN department ON roles.depart_id = department.id LEFT JOIN employee manager ON manager.id = employee.manager_id`
+
 
     connection.query(query, (err, data) => {
         if (err) throw err;
@@ -132,13 +136,65 @@ const newDept = () => {
         message:"What is the name of the new department?"
     }]).then(response => {
         let query = `
-        INSERT INTO department (dept_name)
+        INSERT INTO department (name)
         VALUES (?)`
 
         connection.query(query, [response.newDept], (err, data)=>{
             if(err) throw err
-            console.log("added new department.")
+            console.table(response);
+            console.log(`Added new department ${response.newDept}!`);
         })
     })
 }
 
+//Adding new employee
+
+const newEmployee = () => {
+    inquirer.prompt([{
+        type:"input",
+        name:"firstName",
+        message:"What is the first name of the new employee?"
+    },
+    {
+        type:'input',
+        name:'lastName',
+        messag:'What is the last name of the new employee'
+    },
+    {
+        type:'input',
+        name:'newRole',
+        message: "What is the new employee's role?"
+    },
+
+    ]).then(response => {
+        let query = `
+        INSERT INTO employee (first_name, last_name)
+        VALUES (?,?)`
+
+        connection.query(query, [response.newEmployee], (err, data)=>{
+            if(err) throw err
+            console.log("Success, new employee added!")
+        })
+    })
+}
+
+// Adding an employee
+
+function addNewEmployee(){
+    let query = 'SELECT id, title, salary FROM roles'
+
+    connection.query(query, function (err, res) {
+        if(err) throw err;
+
+        const roleValues = res.map(({id, title, salary}) => ({
+            value: id, title: `${title}`, salary: `${salary}`
+
+        }));
+
+        console.table(res);
+        console.log("role to add");
+
+        promptAddEmployee(roleValues)
+    })
+
+}
