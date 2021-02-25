@@ -143,44 +143,15 @@ const newDept = () => {
             if(err) throw err
             console.table(response);
             console.log(`Added new department ${response.newDept}!`);
+            runSearch()
         })
     })
 }
 
-//Adding new employee
-
-const newEmployee = () => {
-    inquirer.prompt([{
-        type:"input",
-        name:"firstName",
-        message:"What is the first name of the new employee?"
-    },
-    {
-        type:'input',
-        name:'lastName',
-        messag:'What is the last name of the new employee'
-    },
-    {
-        type:'input',
-        name:'newRole',
-        message: "What is the new employee's role?"
-    },
-
-    ]).then(response => {
-        let query = `
-        INSERT INTO employee (first_name, last_name)
-        VALUES (?,?)`
-
-        connection.query(query, [response.newEmployee], (err, data)=>{
-            if(err) throw err
-            console.log("Success, new employee added!")
-        })
-    })
-}
 
 // Adding an employee
 
-function addNewEmployee(){
+function newEmployee(){
     let query = 'SELECT id, title, salary FROM roles'
 
     connection.query(query, function (err, res) {
@@ -194,7 +165,48 @@ function addNewEmployee(){
         console.table(res);
         console.log("role to add");
 
-        promptAddEmployee(roleValues)
-    })
-
+        promptAddEmpData(roleValues);
+    });
 }
+
+//Adding new employee
+
+function promptAddEmpData(roleValues) {
+    inquirer.prompt([
+        {
+        type:"input",
+        name:"firstName",
+        message:"What is the first name of the new employee?"
+    },
+    {
+        type:'input',
+        name:'lastName',
+        message:'What is the last name of the new employee',
+    },
+    {
+        type:'list',
+        name:'newRole',
+        message: "What is the new employee's role?",
+        choices: roleValues
+    },
+
+    ]).then(function (answer) {
+        let query = `
+        INSERT INTO employee SET ?`
+
+        connection.query(query, 
+            {
+            first_name: answer.firstName,
+            last_name: answer.lastName,
+            role_id: answer.newRole,
+        },
+            function(err, res){
+                if (err) throw err;
+                console.table(answer);
+                console.log("Success! New employee added!");
+                runSearch()
+            });
+    });
+}
+
+
