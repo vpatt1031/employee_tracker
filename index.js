@@ -211,22 +211,78 @@ function promptAddEmpData(roleValues) {
 
 // Add role 
 
-const addNewRole = () => {
-    inquirer.prompt([{
-        type:"input",
-        name:"createRole",
-        message:"What is the name of the new role?"
+// const addNewRole = () => {
+//     inquirer.prompt([{
+//         type:"input",
+//         name:"createRole",
+//         message:"What is the name of the new role?"
     
-    }]).then(response => {
-        let query = `INSERT INTO roles (title) VALUES (?)`
+//     }]).then(response => {
+//         let query = `INSERT INTO roles (title) VALUES (?)`
 
-        connection.query(query, [response.createRole], (err, data)=>{
-            if(err) throw err
-            console.table(response);
-            console.log(`Added new role ${response.createRole}!`);
+//         connection.query(query, [response.createRole], (err, data)=>{
+//             if(err) throw err
+//             console.table(response);
+//             console.log(`Added new role ${response.createRole}!`);
+//             runSearch()
+//         })
+//     })
+// }
+
+// Add a role
+
+function addNewRole() {
+    let query = 
+    `SELECT department.id, department.name AS payroll FROM employee JOIN roles ON employee.role_id = roles.id JOIN department on department.id = roles.depart_id GROUP BY department.id, department.name`
+
+    connection.query(query, function (err, res) {
+        if (err) throw err;
+
+        const departValues = res.map(({id, name}) => ({
+            value: id, name: `${id} ${name}`
+        }));
+
+        console.table(res);
+        console.log('Department array created');
+
+        promptAddNewRole(departValues);
+    });
+}
+function promptAddNewRole(departValues) {
+    inquirer.prompt([
+        {
+            type: 'input',
+            name: 'newTitle',
+            message: 'What is the new role title?'
+        },
+        {
+            type: 'input',
+            name: 'newSalary',
+            message: 'What is the salary for this new role?'
+        },
+        {
+           type: 'list',
+           name: 'roleDepart',
+           message: 'What department do you want to assign this role?',
+           choices: departValues
+        },
+    ]).then(function(answer) {
+        let query = `INSERT INTO roles SET ?`
+
+        connection.query(query, 
+            {
+            title: answer.newTitle,
+            salary: answer.newSalary,
+            depart_id: answer.roleDepart
+        },
+        function (err, res) {
+            if (err) throw err;
+
+            console.table(answer);
+            console.log("Success, new role added!");
             runSearch()
-        })
-    })
+        });
+    });
 }
 
 //Updating an employee
