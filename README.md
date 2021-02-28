@@ -16,3 +16,4 @@ https://vpatt1031.github.io/employee_tracker/
 
 # Link to video of application's functionality:
 
+https://drive.google.com/file/d/1x9KOaVSlllQlGoQ6STbHn0fEy-w-UnpF/view?usp=sharing
